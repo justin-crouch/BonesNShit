@@ -5,7 +5,7 @@ using namespace Dog;
 Vector2 dog_vel = Vector2Zero();
 Vector2 dog_pos = Vector2Zero();
 Vector2 dog_size = (Vector2){ 100.0f, 50.0f };
-int health = 3;
+int health = DOG_MAX_HEALTH;
 int score = 0;
 
 // Getter/setter for pos, health, score, and size
@@ -36,6 +36,6 @@ void Dog::Draw()
 // Reset stats of dog
 void Dog::Reset()
 {
-	health = 3;
+	health = DOG_MAX_HEALTH;
 	score = 0;
 }

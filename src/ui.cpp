@@ -62,6 +62,10 @@ bool UI::ButtonEx(const char* text, Rectangle rect, int font_size, Color fg, Col
 		break;
 	case Modes::TOP_LEFT:
 		break;
+	case Modes::CENTER_RIGHT:
+		break;
+	case Modes::CENTER_LEFT:
+		break;
 	}
 
 	Color onhover = CheckCollisionPointRec( GetMousePosition(), collider ) ? hover : bg;
@@ -111,14 +115,21 @@ void UI::TextEx(const char* text, Vector2 position, int font_size, Color color)
 	switch(draw_mode)
 	{
 	case Modes::CENTER:
-		offset.x = MeasureText(text, font_size)/2.0f;
-		offset.y = font_size/2.0f;
+		offset.x = -MeasureText(text, font_size)/2.0f;
+		offset.y = -font_size/2.0f;
 		break;
 	case Modes::TOP_LEFT:
 		break;
+	case Modes::CENTER_RIGHT:
+		offset.x = -MeasureText(text, font_size);
+		offset.y = -font_size/2.0f;
+		break;
+	case Modes::CENTER_LEFT:
+		offset.y = -font_size/2.0f;
+		break;
 	}
 
-	DrawText(text, position.x-offset.x, position.y-offset.y, font_size, color);
+	DrawText(text, position.x+offset.x, position.y+offset.y, font_size, color);
 }
 
 void UI::SimpleRect(Rectangle rect, Color color)
@@ -131,6 +142,10 @@ void UI::SimpleRect(Rectangle rect, Color color)
 		offset.y = rect.height/2.0f;
 		break;
 	case Modes::TOP_LEFT:
+		break;
+	case Modes::CENTER_RIGHT:
+		break;
+	case Modes::CENTER_LEFT:
 		break;
 	}
 

@@ -7,11 +7,37 @@ float 									speeds[MAX_COLLECTABLES];
 Collectable::Type						types[MAX_COLLECTABLES];
 std::function<void()>					callables[Collectable::Type::length];
 
-int 									last = 0;
-float 									cooldown_bone = 0.0f;
-float 									cooldown_shit = 0.0f;
-float 									cooldown_frozen = 0.0f;
+int		last = 0;
+float	cooldown_bone = 0.0f;
+float	cooldown_shit = 0.0f;
+float	cooldown_frozen = 0.0f;
+
+int 	speed_mod		= 100000;
+int		bone_spawn_mod 	= 0;
+int		shit_spawn_mod 	= 0;
+int		bone_spawn_rate = GetRandomValue(SPAWN_RATE_BONE_MIN, SPAWN_RATE_BONE_MAX);
+int		shit_spawn_rate = GetRandomValue(SPAWN_RATE_SHIT_MIN, SPAWN_RATE_SHIT_MAX);
+
 std::bitset<Collectable::Type::length> 	collected_flags;
+
+
+int Collectable::GetVals(int type)
+{
+	switch(type)
+	{
+	case 0:
+		return bone_spawn_mod;
+		break;
+	case 1:
+		return shit_spawn_mod;
+		break;
+	case 2:
+		return speed_mod;
+		break;
+	default: return 0;
+	}
+}
+
 
 void InitAbility(Collectable::Type t)
 {
@@ -71,7 +97,7 @@ void Move(Vector2 bounds, Vector2 dog)
 		speed = (collected_flags[Type::FROZEN] && types[i] == Type::SHIT) ? 0.0f : speeds[i];
 
 		// Move collectible down
-		positions[i].y += speed * GetFrameTime();
+		positions[i].y += speed * (speed_mod/100000.0f) * GetFrameTime();
 		pos = positions[i];
 
 		// Remove collectible if at bottom of screen
@@ -94,8 +120,10 @@ void Spawn(Vector2 bounds)
 {
 	// Update timer to spawn bone
 	cooldown_bone += GetFrameTime();
-	if(cooldown_bone >= SPAWN_RATE_BONE)
+	if(cooldown_bone >= bone_spawn_rate/100000.0f)
 	{
+		bone_spawn_rate = GetRandomValue(SPAWN_RATE_BONE_MIN - bone_spawn_mod, SPAWN_RATE_BONE_MAX - bone_spawn_mod);
+
 		int rdm = GetRandomValue(0, 100);
 
 		// Spawn specific bone with set chance
@@ -108,8 +136,10 @@ void Spawn(Vector2 bounds)
 
 	// Update timer to spawn shit; don't spawn if frozen flag is set
 	cooldown_shit += GetFrameTime();
-	if(cooldown_shit >= SPAWN_RATE_SHIT && !collected_flags[Type::FROZEN])
+	if(cooldown_shit >= shit_spawn_rate/100000.0f && !collected_flags[Type::FROZEN])
 	{
+		shit_spawn_rate = GetRandomValue(SPAWN_RATE_SHIT_MIN - shit_spawn_mod, SPAWN_RATE_SHIT_MAX - shit_spawn_mod);
+
 		Collectable::Add(bounds.x, Type::SHIT);
 		cooldown_shit = 0.0f;
 	}
@@ -187,6 +217,10 @@ void Collectable::Update(Vector2 bounds, Vector2 dog)
 
 	// Spawn new collectibles
 	Spawn(bounds);
+
+	bone_spawn_mod += (bone_spawn_mod < RATE_MOD_BONE_MAX) ? RATE_MOD_BONE : 0;
+	shit_spawn_mod += (shit_spawn_mod < RATE_MOD_SHIT_MAX) ? RATE_MOD_SHIT : 0;
+	speed_mod += (speed_mod < SPEED_MOD_MAX) ? SPEED_MOD : 0;
 }
 
 void Collectable::Draw()
@@ -233,4 +267,10 @@ void Collectable::Reset()
 	cooldown_shit = 0.0f;
 	cooldown_bone = 0.0f;
 	cooldown_frozen = 0.0f;
+
+	speed_mod = 100000;
+	bone_spawn_mod = 0;
+	shit_spawn_mod = 0;
+	bone_spawn_rate = GetRandomValue(SPAWN_RATE_BONE_MIN, SPAWN_RATE_BONE_MAX);
+	shit_spawn_rate = GetRandomValue(SPAWN_RATE_SHIT_MIN, SPAWN_RATE_SHIT_MAX);
 }

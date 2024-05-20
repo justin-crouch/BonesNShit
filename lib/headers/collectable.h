@@ -20,6 +20,8 @@ namespace Collectable
 		length
 	};
 
+	int GetVals(int type);
+
 	void SetCallable(Type t, std::function<void()> func);
 
 	void Add(int bound, Type t);

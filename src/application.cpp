@@ -28,10 +28,7 @@ int main(void)
     // Set what certain collectables do
     Collectable::SetCallable(Collectable::Type::NORMAL  , [](){ Dog::SetScore( Dog::GetScore()+1 );             });
     Collectable::SetCallable(Collectable::Type::GOLDEN  , [](){ Dog::SetScore( Dog::GetScore()+GOLDEN_AMNT );   });
-    Collectable::SetCallable(Collectable::Type::SHIT    , [](){
-        Dog::SetHealth( Dog::GetHealth()-1 );
-        if(Dog::GetHealth() <= 0) GameState::ChangeState(GameState::States::RESET);
-    });
+    Collectable::SetCallable(Collectable::Type::SHIT    , [](){ Dog::SetHealth( Dog::GetHealth()-1 );           });
 
 
     // Update callbacks
@@ -55,11 +52,9 @@ int main(void)
 
     // Update player and collectables when in play
     GameState::SetStateCallback(GameState::States::PLAY, GameState::CallbackType::UPDATE, [](){
-        if(IsKeyPressed(KEY_P)) 
-        {
-            GameState::ChangeState( GameState::States::PAUSE );
-            return;
-        }
+        if(IsKeyPressed(KEY_P))     GameState::ChangeState( GameState::States::PAUSE );
+        if(Dog::GetHealth() <= 0)   GameState::ChangeState( GameState::States::GAMEOVER );
+        if(IsKeyPressed(KEY_SPACE))   GameState::ChangeState( GameState::States::GAMEOVER );
 
         Dog::Update(IsKeyDown(KEY_D) - IsKeyDown(KEY_A));
         Collectable::Update(SCREEN, Dog::GetPos());
@@ -68,6 +63,11 @@ int main(void)
     // Check for key input on pause menu
     GameState::SetStateCallback(GameState::States::PAUSE, GameState::CallbackType::UPDATE, [](){
         if(IsKeyPressed(KEY_P)) GameState::ChangeState( GameState::States::PLAY );
+    });
+
+    // Update for GAMEOVER scene
+    GameState::SetStateCallback(GameState::States::GAMEOVER, GameState::CallbackType::UPDATE, [](){
+        if(IsKeyPressed(KEY_R)) GameState::ChangeState( GameState::States::RESET );
     });
     //--------------------------------------------------------------------------------------
 
@@ -98,6 +98,11 @@ int main(void)
         UI::Text(std::to_string(Dog::GetScore()).c_str(), (Vector2){SCREEN.x/2.0f, 40}, UI::Presets::TEXT_LARGE);
         UI::Text(std::to_string(Dog::GetHealth()).c_str(), (Vector2){SCREEN.x/2.0f, 80}, UI::Presets::TEXT_SMALL);
 
+        UI::SetMode( UI::Modes::CENTER_LEFT );
+        UI::Text(std::to_string(Collectable::GetVals(0)/100000.0f).c_str(), (Vector2){SCREEN.x/1.5f, 40}, UI::Presets::TEXT_SMALL);
+        UI::Text(std::to_string(Collectable::GetVals(1)/100000.0f).c_str(), (Vector2){SCREEN.x/1.5f, 80}, UI::Presets::TEXT_SMALL);
+        UI::Text(std::to_string(Collectable::GetVals(2)/100000.0f).c_str(), (Vector2){SCREEN.x/1.5f, 120}, UI::Presets::TEXT_SMALL);
+
         UI::SetMode( UI::Modes::TOP_LEFT );
         if(UI::Button("Pause", (Vector2){20, 20}, UI::Presets::BUTTON_SMALL))
             GameState::ChangeState( GameState::States::PAUSE );
@@ -117,6 +122,22 @@ int main(void)
         UI::Text("PAUSED", (Vector2){SCREEN.x/2.0f, 150}, UI::Presets::TEXT_TITLE);
         if(UI::Button("Resume", (Vector2){SCREEN.x/2.0f, SCREEN.y/2.0f + 80}, UI::Presets::BUTTON_SMALL))
             GameState::ChangeState( GameState::States::PLAY );
+    });
+
+    // Draw gameover scene
+    GameState::SetStateCallback(GameState::States::GAMEOVER, GameState::CallbackType::DRAW, [](){
+        UI::SetMode( UI::Modes::CENTER );
+        UI::Text("GAMEOVER", (Vector2){SCREEN.x/2.0f, 150}, UI::Presets::TEXT_TITLE);
+
+        UI::SetMode( UI::Modes::CENTER_RIGHT );
+        UI::Text("Bones Collected: ", (Vector2){SCREEN.x/1.7f, 300}, UI::Presets::TEXT_LARGE);
+
+        UI::SetMode( UI::Modes::CENTER_LEFT );
+        UI::Text(std::to_string(Dog::GetScore()).c_str(), (Vector2){SCREEN.x/1.7f, 300}, UI::Presets::TEXT_MEDIUM);
+
+        UI::SetMode( UI::Modes::CENTER );
+        if(UI::Button("Replay", (Vector2){SCREEN.x/2.0f, SCREEN.y/2.0f + 80}, UI::Presets::BUTTON_SMALL))
+            GameState::ChangeState( GameState::States::RESET );
     });
     //--------------------------------------------------------------------------------------
     

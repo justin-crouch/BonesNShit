@@ -22,6 +22,8 @@ namespace UI
 	typedef enum{
 		CENTER,
 		TOP_LEFT,
+		CENTER_RIGHT,
+		CENTER_LEFT,
 	} Modes;
 
 	void SetMode(Modes mode);
