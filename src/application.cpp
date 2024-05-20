@@ -4,6 +4,7 @@
 #include "dog.h"
 #include "collectable.h"
 #include "gamestate.h"
+#include "ui.h"
 #include "config.h"
 
 #include <string>
@@ -59,8 +60,7 @@ int main(void)
         Dog::Draw();
         Collectable::Draw();
 
-        DrawText(std::to_string(Dog::GetScore()).c_str(), SCREEN.x/2.0f, 40, 40, (Color){255, 255, 255, 255});
-        DrawText(std::to_string(Dog::GetHealth()).c_str(), SCREEN.x/2.0f, 80, 40, (Color){255, 255, 255, 255});
+        UI::Play(std::to_string(Dog::GetScore()).c_str(), std::to_string(Dog::GetHealth()).c_str());
     });
 
     SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second

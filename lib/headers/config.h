@@ -3,6 +3,8 @@
 
 #define SCREEN				(Vector2){ 1280, 720 }
 
+#define MAX_UI_ELEMS		20
+
 #define MAX_COLLECTABLES	10
 #define MIN_FALL_SPD		100.0f
 #define MAX_FALL_SPD		200.0f
