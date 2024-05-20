@@ -11,8 +11,8 @@ namespace GameState
 	    EXIT,
 	    
 	    RESET,
-	    PAUSE,
 	    PLAY,
+	    PAUSE,
 	    GAMEOVER,
 	    length
 	} States;

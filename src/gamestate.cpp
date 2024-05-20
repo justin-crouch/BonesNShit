@@ -2,7 +2,7 @@
 using namespace GameState;
 
 // Current game state
-GameState::States game = GameState::States::RESET;
+GameState::States game = GameState::States::MAIN;
 
 // Callbacks for wanted game states
 std::function<void()> enters[GameState::States::length];

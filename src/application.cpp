@@ -33,7 +33,16 @@ int main(void)
         if(Dog::GetHealth() <= 0) GameState::ChangeState(GameState::States::RESET);
     });
 
-    // Set what certain game states do
+
+    // Update callbacks
+    //--------------------------------------------------------------------------------------
+    // Allow closing window if not on web build
+    #ifndef PLATFORM_WEB
+    GameState::SetStateCallback(GameState::States::EXIT, GameState::CallbackType::ENTER, [](){
+        CloseWindow();
+    });
+    #endif
+
     // Reset game, then start playing
     GameState::SetStateCallback(GameState::States::RESET, GameState::CallbackType::UPDATE, [](){
         Dog::Reset();
@@ -46,23 +55,71 @@ int main(void)
 
     // Update player and collectables when in play
     GameState::SetStateCallback(GameState::States::PLAY, GameState::CallbackType::UPDATE, [](){
-        if(IsKeyPressed(KEY_SPACE)) 
+        if(IsKeyPressed(KEY_P)) 
         {
-            GameState::ChangeState( GameState::States::RESET );
+            GameState::ChangeState( GameState::States::PAUSE );
             return;
         }
 
         Dog::Update(IsKeyDown(KEY_D) - IsKeyDown(KEY_A));
         Collectable::Update(SCREEN, Dog::GetPos());
     });
+
+    // Check for key input on pause menu
+    GameState::SetStateCallback(GameState::States::PAUSE, GameState::CallbackType::UPDATE, [](){
+        if(IsKeyPressed(KEY_P)) GameState::ChangeState( GameState::States::PLAY );
+    });
+    //--------------------------------------------------------------------------------------
+
+    // Draw callbacks
+    //--------------------------------------------------------------------------------------
+    // Draw main menu
+    GameState::SetStateCallback(GameState::States::MAIN, GameState::CallbackType::DRAW, [](){
+        UI::SetMode( UI::Modes::CENTER );
+        UI::Text("BONES N SH*T", (Vector2){SCREEN.x/2.0f, 200}, UI::Presets::TEXT_TITLE);
+
+        if(UI::Button("Play", (Vector2){SCREEN.x/2.0f, 300}, UI::Presets::BUTTON_MEDIUM))
+            GameState::ChangeState( GameState::States::RESET );
+
+        // Allow showing of exit button if not on web build
+        #ifndef PLATFORM_WEB
+        if(UI::Button("Exit", (Vector2){SCREEN.x/2.0f, 400}, UI::Presets::BUTTON_LARGE))
+            GameState::ChangeState( GameState::States::EXIT );
+        #endif
+    });
+
     // Draw dog, collectables, and stats when in play
     GameState::SetStateCallback(GameState::States::PLAY, GameState::CallbackType::DRAW, [](){
+        UI::SetMode( UI::Modes::CENTER );
+
         Dog::Draw();
         Collectable::Draw();
 
-        UI::Play(std::to_string(Dog::GetScore()).c_str(), std::to_string(Dog::GetHealth()).c_str());
+        UI::Text(std::to_string(Dog::GetScore()).c_str(), (Vector2){SCREEN.x/2.0f, 40}, UI::Presets::TEXT_LARGE);
+        UI::Text(std::to_string(Dog::GetHealth()).c_str(), (Vector2){SCREEN.x/2.0f, 80}, UI::Presets::TEXT_SMALL);
+
+        UI::SetMode( UI::Modes::TOP_LEFT );
+        if(UI::Button("Pause", (Vector2){20, 20}, UI::Presets::BUTTON_SMALL))
+            GameState::ChangeState( GameState::States::PAUSE );
     });
 
+    // Draw dog, collectables, and stats when paused
+    GameState::SetStateCallback(GameState::States::PAUSE, GameState::CallbackType::DRAW, [](){
+        UI::SetMode( UI::Modes::CENTER );
+
+        Dog::Draw();
+        Collectable::Draw();
+
+        UI::Text(std::to_string(Dog::GetScore()).c_str(), (Vector2){SCREEN.x/2.0f, 40}, UI::Presets::TEXT_LARGE);
+        UI::Text(std::to_string(Dog::GetHealth()).c_str(), (Vector2){SCREEN.x/2.0f, 80}, UI::Presets::TEXT_SMALL);
+
+        UI::SimpleRect((Rectangle){SCREEN.x/2.0f, SCREEN.y/2.0f, SCREEN.x-10, SCREEN.y-10}, (Color){0, 0, 0, 200});
+        UI::Text("PAUSED", (Vector2){SCREEN.x/2.0f, 150}, UI::Presets::TEXT_TITLE);
+        if(UI::Button("Resume", (Vector2){SCREEN.x/2.0f, SCREEN.y/2.0f + 80}, UI::Presets::BUTTON_SMALL))
+            GameState::ChangeState( GameState::States::PLAY );
+    });
+    //--------------------------------------------------------------------------------------
+    
     SetTargetFPS(60);                   // Set our game to run at 60 frames-per-second
 
     #if defined(PLATFORM_WEB)
