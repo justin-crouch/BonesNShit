@@ -1,20 +1,40 @@
 #include "raylib.h"
 #include "raymath.h"
 
-#include "dog.h"
-#include "collectable.h"
-#include "gamestate.h"
-#include "ui.h"
-#include "config.h"
-
-#include <string>
+#include <iostream>
 
 #define PLATFORM_WEB
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
 #endif
 
+#include "config.h"
+Vector2 SCREEN = (Vector2){ 100, 100 };
+
+extern "C" {
+void SetScreen(int w, int h)
+{
+    EM_ASM({ Module.print($0, $1); }, w, h);
+    SCREEN.x = w;
+    SCREEN.y = h;
+
+    SetWindowSize(w, h);
+
+    EM_ASM({
+        resizeCanvas($0, $1);
+    }, w, h);
+}
+}
+
+#include "dog.h"
+#include "collectable.h"
+#include "gamestate.h"
+#include "ui.h"
+
+#include <string>
+
 void UpdateDrawFrame(void);
+Camera2D viewport;
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -23,13 +43,15 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(SCREEN.x, SCREEN.y, "Collectables N Shit");
+
+    EM_ASM({ init() });
     
     // Set what certain collectables do
     Collectable::SetCallable(Collectable::Type::NORMAL  , [](){ Dog::SetScore( Dog::GetScore()+1 );             });
     Collectable::SetCallable(Collectable::Type::GOLDEN  , [](){ Dog::SetScore( Dog::GetScore()+GOLDEN_AMNT );   });
     Collectable::SetCallable(Collectable::Type::SHIT    , [](){ Dog::SetHealth( Dog::GetHealth()-1 );           });
-
 
     // Update callbacks
     //--------------------------------------------------------------------------------------
@@ -40,10 +62,26 @@ int main(void)
     });
     #endif
 
+    GameState::SetStateCallback(GameState::States::INIT, GameState::CallbackType::UPDATE, [](){
+        
+
+        GameState::ChangeState(GameState::States::MAIN);
+    });
+
+    #ifdef PLATFORM_WEB
+    GameState::SetStateCallback(GameState::States::MAIN, GameState::CallbackType::ENTER, [](){
+        
+    });
+    #endif
+    GameState::SetStateCallback(GameState::States::MAIN, GameState::CallbackType::UPDATE, [](){
+        if(IsKeyPressed(KEY_P)) GameState::ChangeState( GameState::States::RESET );
+        if(IsKeyPressed(KEY_SPACE)) EM_ASM({ init(); });
+    });
+
     // Reset game, then start playing
     GameState::SetStateCallback(GameState::States::RESET, GameState::CallbackType::UPDATE, [](){
         Dog::Reset();
-        Dog::SetPos( (Vector2){ SCREEN.x/2.0f, SCREEN.y-Dog::GetSize().y-10 } );
+        Dog::SetPos( (Vector2){ (float)GetScreenWidth()/2.0f, (float)GetScreenHeight()-Dog::GetSize().y-10 } );
 
         Collectable::Reset();
 
@@ -57,7 +95,7 @@ int main(void)
         if(IsKeyPressed(KEY_SPACE))   GameState::ChangeState( GameState::States::GAMEOVER );
 
         Dog::Update(IsKeyDown(KEY_D) - IsKeyDown(KEY_A));
-        Collectable::Update(SCREEN, Dog::GetPos());
+        Collectable::Update((Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()}, Dog::GetPos());
     });
 
     // Check for key input on pause menu
@@ -76,14 +114,14 @@ int main(void)
     // Draw main menu
     GameState::SetStateCallback(GameState::States::MAIN, GameState::CallbackType::DRAW, [](){
         UI::SetMode( UI::Modes::CENTER );
-        UI::Text("BONES N SH*T", (Vector2){SCREEN.x/2.0f, 200}, UI::Presets::TEXT_TITLE);
+        UI::Text("BONES N SH*T", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight() * 0.1f}, UI::Presets::TEXT_TITLE);
 
-        if(UI::Button("Play", (Vector2){SCREEN.x/2.0f, 300}, UI::Presets::BUTTON_MEDIUM))
+        if(UI::Button("Play", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight() * 0.2f}, UI::Presets::BUTTON_MEDIUM))
             GameState::ChangeState( GameState::States::RESET );
 
         // Allow showing of exit button if not on web build
         #ifndef PLATFORM_WEB
-        if(UI::Button("Exit", (Vector2){SCREEN.x/2.0f, 400}, UI::Presets::BUTTON_LARGE))
+        if(UI::Button("Exit", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight() * 0.3f}, UI::Presets::BUTTON_LARGE))
             GameState::ChangeState( GameState::States::EXIT );
         #endif
     });
@@ -95,13 +133,13 @@ int main(void)
         Dog::Draw();
         Collectable::Draw();
 
-        UI::Text(std::to_string(Dog::GetScore()).c_str(), (Vector2){SCREEN.x/2.0f, 40}, UI::Presets::TEXT_LARGE);
-        UI::Text(std::to_string(Dog::GetHealth()).c_str(), (Vector2){SCREEN.x/2.0f, 80}, UI::Presets::TEXT_SMALL);
+        UI::Text(std::to_string(Dog::GetScore()).c_str(), (Vector2){(float)GetScreenWidth()/2.0f, 40}, UI::Presets::TEXT_LARGE);
+        UI::Text(std::to_string(Dog::GetHealth()).c_str(), (Vector2){(float)GetScreenWidth()/2.0f, 80}, UI::Presets::TEXT_SMALL);
 
         UI::SetMode( UI::Modes::CENTER_LEFT );
-        UI::Text(std::to_string(Collectable::GetVals(0)/100000.0f).c_str(), (Vector2){SCREEN.x/1.5f, 40}, UI::Presets::TEXT_SMALL);
-        UI::Text(std::to_string(Collectable::GetVals(1)/100000.0f).c_str(), (Vector2){SCREEN.x/1.5f, 80}, UI::Presets::TEXT_SMALL);
-        UI::Text(std::to_string(Collectable::GetVals(2)/100000.0f).c_str(), (Vector2){SCREEN.x/1.5f, 120}, UI::Presets::TEXT_SMALL);
+        UI::Text(std::to_string(Collectable::GetVals(0)/100000.0f).c_str(), (Vector2){(float)GetScreenWidth()/1.5f, 40}, UI::Presets::TEXT_SMALL);
+        UI::Text(std::to_string(Collectable::GetVals(1)/100000.0f).c_str(), (Vector2){(float)GetScreenWidth()/1.5f, 80}, UI::Presets::TEXT_SMALL);
+        UI::Text(std::to_string(Collectable::GetVals(2)/100000.0f).c_str(), (Vector2){(float)GetScreenWidth()/1.5f, 120}, UI::Presets::TEXT_SMALL);
 
         UI::SetMode( UI::Modes::TOP_LEFT );
         if(UI::Button("Pause", (Vector2){20, 20}, UI::Presets::BUTTON_SMALL))
@@ -115,28 +153,28 @@ int main(void)
         Dog::Draw();
         Collectable::Draw();
 
-        UI::Text(std::to_string(Dog::GetScore()).c_str(), (Vector2){SCREEN.x/2.0f, 40}, UI::Presets::TEXT_LARGE);
-        UI::Text(std::to_string(Dog::GetHealth()).c_str(), (Vector2){SCREEN.x/2.0f, 80}, UI::Presets::TEXT_SMALL);
+        UI::Text(std::to_string(Dog::GetScore()).c_str(), (Vector2){(float)GetScreenWidth()/2.0f, 40}, UI::Presets::TEXT_LARGE);
+        UI::Text(std::to_string(Dog::GetHealth()).c_str(), (Vector2){(float)GetScreenWidth()/2.0f, 80}, UI::Presets::TEXT_SMALL);
 
-        UI::SimpleRect((Rectangle){SCREEN.x/2.0f, SCREEN.y/2.0f, SCREEN.x-10, SCREEN.y-10}, (Color){0, 0, 0, 200});
-        UI::Text("PAUSED", (Vector2){SCREEN.x/2.0f, 150}, UI::Presets::TEXT_TITLE);
-        if(UI::Button("Resume", (Vector2){SCREEN.x/2.0f, SCREEN.y/2.0f + 80}, UI::Presets::BUTTON_SMALL))
+        UI::SimpleRect((Rectangle){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight()/2.0f, (float)GetScreenWidth()-10, (float)GetScreenHeight()-10}, (Color){0, 0, 0, 200});
+        UI::Text("PAUSED", (Vector2){(float)GetScreenWidth()/2.0f, 150}, UI::Presets::TEXT_TITLE);
+        if(UI::Button("Resume", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight()/2.0f + 80}, UI::Presets::BUTTON_SMALL))
             GameState::ChangeState( GameState::States::PLAY );
     });
 
     // Draw gameover scene
     GameState::SetStateCallback(GameState::States::GAMEOVER, GameState::CallbackType::DRAW, [](){
         UI::SetMode( UI::Modes::CENTER );
-        UI::Text("GAMEOVER", (Vector2){SCREEN.x/2.0f, 150}, UI::Presets::TEXT_TITLE);
+        UI::Text("GAMEOVER", (Vector2){(float)GetScreenWidth()/2.0f, 150}, UI::Presets::TEXT_TITLE);
 
         UI::SetMode( UI::Modes::CENTER_RIGHT );
-        UI::Text("Bones Collected: ", (Vector2){SCREEN.x/1.7f, 300}, UI::Presets::TEXT_LARGE);
+        UI::Text("Bones Collected: ", (Vector2){(float)GetScreenWidth()/1.7f, 300}, UI::Presets::TEXT_LARGE);
 
         UI::SetMode( UI::Modes::CENTER_LEFT );
-        UI::Text(std::to_string(Dog::GetScore()).c_str(), (Vector2){SCREEN.x/1.7f, 300}, UI::Presets::TEXT_MEDIUM);
+        UI::Text(std::to_string(Dog::GetScore()).c_str(), (Vector2){(float)GetScreenWidth()/1.7f, 300}, UI::Presets::TEXT_MEDIUM);
 
         UI::SetMode( UI::Modes::CENTER );
-        if(UI::Button("Replay", (Vector2){SCREEN.x/2.0f, SCREEN.y/2.0f + 80}, UI::Presets::BUTTON_SMALL))
+        if(UI::Button("Replay", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight()/2.0f + 80}, UI::Presets::BUTTON_SMALL))
             GameState::ChangeState( GameState::States::RESET );
     });
     //--------------------------------------------------------------------------------------
@@ -177,7 +215,11 @@ void UpdateDrawFrame(void)
 
         ClearBackground(BLACK);
 
+        // BeginMode2D(viewport);
+
         GameState::Draw();
+        
+        // EndMode2D();
 
     EndDrawing();
     //----------------------------------------------------------------------------------

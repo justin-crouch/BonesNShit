@@ -68,12 +68,15 @@ bool UI::ButtonEx(const char* text, Rectangle rect, int font_size, Color fg, Col
 		break;
 	}
 
-	Color onhover = CheckCollisionPointRec( GetMousePosition(), collider ) ? hover : bg;
+	Vector2 mouse_pos = GetMousePosition();
+
+	DrawRectangleV(mouse_pos, (Vector2){20, 20}, (Color){255,0,255,255});
+	Color onhover = CheckCollisionPointRec( mouse_pos, collider ) ? hover : bg;
 
 	DrawRectangleRec(collider, onhover);
 	DrawText(text, collider.x + collider.width/2.0f - MeasureText(text, font_size)/2.0f, collider.y + collider.height/2.0f - font_size/2.0f, font_size, fg);
 
-	return (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) ? CheckCollisionPointRec( GetMousePosition(), collider ) : false);
+	return (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) ? CheckCollisionPointRec( mouse_pos, collider ) : false);
 }
 
 void UI::Text(const char* text, Vector2 position, Presets preset)

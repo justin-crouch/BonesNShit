@@ -4,49 +4,47 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-    <title>raylib web game</title>
+    <title>Bones N Shit</title>
 
-    <meta name="title" content="raylib web game">
-    <meta name="description" content="New raylib web videogame, developed using raylib videogames library">
-    <meta name="keywords" content="raylib, programming, examples, html5, C, C++, library, learn, games, videogames">
-    <meta name="viewport" content="width=device-width">
+    <meta name="title" content="Bones N Shit">
+    <meta name="description" content="Game for Duck Duck Jam, developed using raylib videogames library">
+    <meta name="keywords" content="raylib, programming, examples, html5, C++, library, learn, games, videogames">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Open Graph metatags for sharing -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="raylib web game">
+    <meta property="og:title" content="Bones N Shit">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image" content="https://www.raylib.com/common/raylib_logo.png">
-    <meta property="og:image:alt" content="New raylib web videogame, developed using raylib videogames library" />
-    <meta property="og:site_name" content="raylib - example">
+    <meta property="og:image:alt" content="Game for Duck Duck Jam, developed using raylib videogames library" />
+    <meta property="og:site_name" content="Bones N Shit">
     <meta property="og:url" content="https://www.raylib.com/games.html">
-    <meta property="og:description" content="New raylib web videogame, developed using raylib videogames library">
+    <meta property="og:description" content="Game for Duck Duck Jam, developed using raylib videogames library">
 
     <!-- Twitter metatags for sharing -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@raysan5">
-    <meta name="twitter:title" content="raylib web game">
+    <meta name="twitter:title" content="Bones N Shit">
     <meta name="twitter:image" content="https://www.raylib.com/common/raylib_logo.png">
-    <meta name="twitter:image:alt" content="New raylib web videogame, developed using raylib videogames library">
+    <meta name="twitter:image:alt" content="Game for Duck Duck Jam, developed using raylib videogames library">
     <meta name="twitter:url" content="https://www.raylib.com/games.html">
-    <meta name="twitter:description" content="New raylib web videogame, developed using raylib videogames library">
+    <meta name="twitter:description" content="Game for Duck Duck Jam, developed using raylib videogames library">
 
     <!-- Favicon -->
     <link rel="shortcut icon" href="https://www.raylib.com/favicon.ico">
 
     <style>
         body { margin: 0px; }
-        /*canvas.emscripten { border: 0px none; background-color: black; }*/
-        canvas.emscripten {
-            padding: 0;
-            margin: auto;
-            display: block;
-            /*width: 800px;
-            height: 600px;*/
+        /*canvas { border: 2px solid red; }*/
+        canvas {
+            width: 300;
+            aspect-ratio: 16/9;
+
+            margin: 0;
             position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            top: 50%;
+            -ms-transform: translateY(-50%);
+            transform: translateY(-50%);
         }
     </style>
     <script type='text/javascript' src="https://cdn.jsdelivr.net/gh/eligrey/FileSaver.js/dist/FileSaver.min.js"> </script>
@@ -69,9 +67,9 @@
         }
     </script>
     </head>
-    <body>
+    <body id="body">
         <canvas class=emscripten id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
-        <p id="output" />
+        <!-- <p id="output" /> -->
         <script>
             var Module = {
                 print: (function() {
@@ -91,6 +89,23 @@
                     return canvas;
                 })()
             };
+
+            function init(){
+                Module._SetScreen(window.innerWidth, window.innerWidth * 0.5625);
+            }
+
+            function resizeCanvas(w, h){
+                // Module.canvas.width = w;
+                Module.canvas.style.height = h;
+
+                Module.canvas.style.margin = 0;
+                Module.canvas.style.position = "absolute";
+                Module.canvas.style.top = 0.5;
+                Module.canvas.style.msTransform = "translateY(-50%)";
+                Module.canvas.style.transform = "translateY(-50%)";
+            }
+
+            window.onresize = init;
         </script>
         {{{ SCRIPT }}}
     </body>

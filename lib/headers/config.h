@@ -1,7 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define SCREEN				(Vector2){ 1280, 720 }
+// #define SCREEN		(Vector2){ 1280, 720 }
+extern Vector2 SCREEN;
 
 #define MAX_COLLECTABLES	20
 #define MIN_FALL_SPD		100.0f
@@ -12,11 +13,11 @@
 #define SPAWN_RATE_SHIT_MIN	250000
 #define SPAWN_RATE_SHIT_MAX	350000
 
-#define RATE_MOD_BONE		000010
+#define RATE_MOD_BONE		000015
 #define RATE_MOD_SHIT		000020
 #define SPEED_MOD			000020
-#define RATE_MOD_BONE_MAX	100000
-#define RATE_MOD_SHIT_MAX	400000
+#define RATE_MOD_BONE_MAX	150000
+#define RATE_MOD_SHIT_MAX	300000
 #define SPEED_MOD_MAX		350000
 
 #define CHANCE_NORMAL		84

@@ -4,6 +4,7 @@ EXCL_LIBS		:=
 
 CXX_FLAGS		:= --std=c++14
 DEFAULT_FLAGS	:= -lgdi32 -lwinmm
+EXPORTED_FUNCS	:= _main,_SetScreen -sEXPORTED_RUNTIME_METHODS=ccall,cwrap
 
 ifdef project
 	EXEC		:= bin/$(project)
@@ -55,7 +56,7 @@ $(EXEC): $(OBJS)
 ifeq ($(TARGET),WINDOWS)
 	g++ $(OBJS) $(INCLUDE_FLAG) $(STATIC_LIBS) $(DEFAULT_FLAGS) $(CXX_FLAGS) -o $(EXEC)
 else ifeq ($(TARGET),WEB)
-	C:/emsdk/upstream/emscripten/em++ -o $(subst .exe,.html,$(EXEC)) $(OBJS) -Os -Wall lib/raylib/rayweb.a -Ilib/raylib -s USE_GLFW=3 --shell-file $(SHELL_FILE) $(PRELOAD_FILES) -D_DEFAULT_SOURCE -DPLATFORM_WEB $(CXX_FLAGS)
+	C:/emsdk/upstream/emscripten/em++ -o $(subst .exe,.html,$(EXEC)) $(OBJS) -Os -Wall lib/raylib/rayweb.a -Ilib/raylib -s USE_GLFW=3 --shell-file $(SHELL_FILE) $(PRELOAD_FILES) -sEXPORTED_FUNCTIONS=$(EXPORTED_FUNCS) -D_DEFAULT_SOURCE -DPLATFORM_WEB $(CXX_FLAGS)
 endif
 	@echo ---------------------------------------------
 

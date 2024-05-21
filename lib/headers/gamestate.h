@@ -6,6 +6,8 @@
 namespace GameState
 {
 	typedef enum {
+	    INIT,
+	    
 	    MAIN,
 	    OPTIONS,
 	    EXIT,
@@ -14,6 +16,7 @@ namespace GameState
 	    PLAY,
 	    PAUSE,
 	    GAMEOVER,
+
 	    length
 	} States;
 
