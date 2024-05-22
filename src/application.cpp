@@ -1,8 +1,6 @@
 #include "raylib.h"
 #include "raymath.h"
 
-#include <iostream>
-
 #define PLATFORM_WEB
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -11,18 +9,58 @@
 #include "config.h"
 Vector2 SCREEN = (Vector2){ 100, 100 };
 
+#include "style.h"
+
 extern "C" {
 void SetScreen(int w, int h)
 {
-    EM_ASM({ Module.print($0, $1); }, w, h);
-    SCREEN.x = w;
-    SCREEN.y = h;
+    // EM_ASM({ Module.print($0, $1); }, w, h);
+    if(w < h)
+    {
+        SCREEN.x = 207;
+        SCREEN.y = 360;
+    }else if(h < 368)
+    {
+        SCREEN.x = 500;
+        SCREEN.y = 500*0.5652;
+    } else if(w >= 368 && w < 512)
+    {
+        SCREEN.x = 368;
+        SCREEN.y = 207;
+    } else if(w >= 512 && w < 640)
+    {
+        SCREEN.x = 512;
+        SCREEN.y = 288;
+    } else if(w >= 640 && w < 768)
+    {
+        SCREEN.x = 640;
+        SCREEN.y = 360;
+    } else if(w >= 768 && w < 896)
+    {
+        SCREEN.x = 768;
+        SCREEN.y = 432;
+    } else if(w >= 896 && w < 1024)
+    {
+        SCREEN.x = 896;
+        SCREEN.y = 504;
+    } else if(w >= 1024 && w < 1152)
+    {
+        SCREEN.x = 1024;
+        SCREEN.y = 576;
+    } else if(w >= 1152 && w < 1280)
+    {
+        SCREEN.x = 1152;
+        SCREEN.y = 648;
+    } else if(w >= 1280)
+    {
+        SCREEN.x = 1280;
+        SCREEN.y = 720;
+    }
 
-    SetWindowSize(w, h);
+    SetWindowSize(SCREEN.x, SCREEN.y);
+    Style::SetFontSizes(SCREEN);
 
-    EM_ASM({
-        resizeCanvas($0, $1);
-    }, w, h);
+    EM_ASM({ resizeCanvas($0, $1); }, SCREEN.x, SCREEN.y);
 }
 }
 
@@ -43,10 +81,8 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(SCREEN.x, SCREEN.y, "Collectables N Shit");
-
     EM_ASM({ init() });
+    InitWindow(SCREEN.x, SCREEN.y, "Bones N Shit");
     
     // Set what certain collectables do
     Collectable::SetCallable(Collectable::Type::NORMAL  , [](){ Dog::SetScore( Dog::GetScore()+1 );             });
@@ -63,8 +99,6 @@ int main(void)
     #endif
 
     GameState::SetStateCallback(GameState::States::INIT, GameState::CallbackType::UPDATE, [](){
-        
-
         GameState::ChangeState(GameState::States::MAIN);
     });
 
@@ -75,13 +109,12 @@ int main(void)
     #endif
     GameState::SetStateCallback(GameState::States::MAIN, GameState::CallbackType::UPDATE, [](){
         if(IsKeyPressed(KEY_P)) GameState::ChangeState( GameState::States::RESET );
-        if(IsKeyPressed(KEY_SPACE)) EM_ASM({ init(); });
     });
 
     // Reset game, then start playing
     GameState::SetStateCallback(GameState::States::RESET, GameState::CallbackType::UPDATE, [](){
         Dog::Reset();
-        Dog::SetPos( (Vector2){ (float)GetScreenWidth()/2.0f, (float)GetScreenHeight()-Dog::GetSize().y-10 } );
+        Dog::SetPos( (Vector2){ 0.5f, (float)GetScreenHeight()-Dog::GetSize().y-10 } );
 
         Collectable::Reset();
 
@@ -95,7 +128,7 @@ int main(void)
         if(IsKeyPressed(KEY_SPACE))   GameState::ChangeState( GameState::States::GAMEOVER );
 
         Dog::Update(IsKeyDown(KEY_D) - IsKeyDown(KEY_A));
-        Collectable::Update((Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()}, Dog::GetPos());
+        Collectable::Update((Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()}, Dog::GetPos(), Dog::GetSize());
     });
 
     // Check for key input on pause menu
@@ -114,14 +147,14 @@ int main(void)
     // Draw main menu
     GameState::SetStateCallback(GameState::States::MAIN, GameState::CallbackType::DRAW, [](){
         UI::SetMode( UI::Modes::CENTER );
-        UI::Text("BONES N SH*T", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight() * 0.1f}, UI::Presets::TEXT_TITLE);
+        UI::Text("BONES N SH*T", (Vector2){(float)GetScreenWidth()/2.0f, Style::VERY_LARGE_FONT*3.0f}, UI::Presets::TEXT_TITLE);
 
-        if(UI::Button("Play", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight() * 0.2f}, UI::Presets::BUTTON_MEDIUM))
+        if(UI::Button("Play", (Vector2){(float)GetScreenWidth()/2.0f, Style::VERY_LARGE_FONT*5.0f}, UI::Presets::BUTTON_MEDIUM))
             GameState::ChangeState( GameState::States::RESET );
 
         // Allow showing of exit button if not on web build
         #ifndef PLATFORM_WEB
-        if(UI::Button("Exit", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight() * 0.3f}, UI::Presets::BUTTON_LARGE))
+        if(UI::Button("Exit", (Vector2){(float)GetScreenWidth()/2.0f, Style::VERY_LARGE_FONT*5.0f + Style::LARGE_FONT}, UI::Presets::BUTTON_LARGE))
             GameState::ChangeState( GameState::States::EXIT );
         #endif
     });

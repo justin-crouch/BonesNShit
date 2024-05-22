@@ -27,7 +27,7 @@ namespace Collectable
 	void Add(int bound, Type t);
 	void Remove(int idx);
 
-	void Update(Vector2 bounds, Vector2 dog);
+	void Update(Vector2 bounds, Vector2 dog_pos, Vector2 dog_size);
 	void Draw();
 	void Reset();
 }

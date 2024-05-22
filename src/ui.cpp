@@ -13,27 +13,27 @@ bool UI::Button(const char* text, Vector2 position, Presets preset)
 	switch(preset)
 	{
 	case Presets::BUTTON_SMALL:
-		rect.width = BTN_SIZE_SMALL.x;
-		rect.height = BTN_SIZE_SMALL.y;
-		font_size = SMALL_FONT;
+		rect.width = Style::BTN_SIZE_SMALL.x;
+		rect.height = Style::BTN_SIZE_SMALL.y;
+		font_size = Style::SMALL_FONT;
 		fg = BTN_FG;
 		bg = BTN_BG;
 		hover = BTN_HOVER;
 		break;
 
 	case Presets::BUTTON_MEDIUM:
-		rect.width = BTN_SIZE_MEDIUM.x;
-		rect.height = BTN_SIZE_MEDIUM.y;
-		font_size = MEDIUM_FONT;
+		rect.width = Style::BTN_SIZE_MEDIUM.x;
+		rect.height = Style::BTN_SIZE_MEDIUM.y;
+		font_size = Style::MEDIUM_FONT;
 		fg = BTN_FG;
 		bg = BTN_BG;
 		hover = BTN_HOVER;
 		break;
 
 	case Presets::BUTTON_LARGE:
-		rect.width = BTN_SIZE_LARGE.x;
-		rect.height = BTN_SIZE_LARGE.y;
-		font_size = LARGE_FONT;
+		rect.width = Style::BTN_SIZE_LARGE.x;
+		rect.height = Style::BTN_SIZE_LARGE.y;
+		font_size = Style::LARGE_FONT;
 		fg = BTN_FG;
 		bg = BTN_BG;
 		hover = BTN_HOVER;
@@ -69,8 +69,6 @@ bool UI::ButtonEx(const char* text, Rectangle rect, int font_size, Color fg, Col
 	}
 
 	Vector2 mouse_pos = GetMousePosition();
-
-	DrawRectangleV(mouse_pos, (Vector2){20, 20}, (Color){255,0,255,255});
 	Color onhover = CheckCollisionPointRec( mouse_pos, collider ) ? hover : bg;
 
 	DrawRectangleRec(collider, onhover);
@@ -87,22 +85,22 @@ void UI::Text(const char* text, Vector2 position, Presets preset)
 	switch(preset)
 	{
 	case Presets::TEXT_SMALL:
-		font_size = SMALL_FONT;
+		font_size = Style::SMALL_FONT;
 		color = TEXT_COLOR;
 		break;
 
 	case Presets::TEXT_MEDIUM:
-		font_size = MEDIUM_FONT;
+		font_size = Style::MEDIUM_FONT;
 		color = TEXT_COLOR;
 		break;
 
 	case Presets::TEXT_LARGE:
-		font_size = LARGE_FONT;
+		font_size = Style::LARGE_FONT;
 		color = TEXT_COLOR;
 		break;
 
 	case Presets::TEXT_TITLE:
-		font_size = VERY_LARGE_FONT;
+		font_size = Style::VERY_LARGE_FONT;
 		color = TEXT_COLOR;
 		break;
 

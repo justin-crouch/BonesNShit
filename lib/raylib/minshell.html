@@ -37,14 +37,16 @@
         body { margin: 0px; }
         /*canvas { border: 2px solid red; }*/
         canvas {
-            width: 300;
-            aspect-ratio: 16/9;
+            max-width: 1600px;
+            min-width: 360px;
+            /*aspect-ratio: 16/9;*/
 
             margin: 0;
             position: absolute;
             top: 50%;
-            -ms-transform: translateY(-50%);
-            transform: translateY(-50%);
+            left: 50%;
+            -ms-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
         }
     </style>
     <script type='text/javascript' src="https://cdn.jsdelivr.net/gh/eligrey/FileSaver.js/dist/FileSaver.min.js"> </script>
@@ -89,21 +91,16 @@
                     return canvas;
                 })()
             };
+            
+            function resizeCanvas(w, h){
+                Module.canvas.width = w;
+                Module.canvas.height = h;
+            }
 
             function init(){
-                Module._SetScreen(window.innerWidth, window.innerWidth * 0.5625);
+                Module._SetScreen(window.innerWidth, window.innerHeight);
             }
 
-            function resizeCanvas(w, h){
-                // Module.canvas.width = w;
-                Module.canvas.style.height = h;
-
-                Module.canvas.style.margin = 0;
-                Module.canvas.style.position = "absolute";
-                Module.canvas.style.top = 0.5;
-                Module.canvas.style.msTransform = "translateY(-50%)";
-                Module.canvas.style.transform = "translateY(-50%)";
-            }
 
             window.onresize = init;
         </script>

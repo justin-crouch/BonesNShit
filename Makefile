@@ -4,7 +4,7 @@ EXCL_LIBS		:=
 
 CXX_FLAGS		:= --std=c++14
 DEFAULT_FLAGS	:= -lgdi32 -lwinmm
-EXPORTED_FUNCS	:= _main,_SetScreen -sEXPORTED_RUNTIME_METHODS=ccall,cwrap
+EXPORTED_FUNCS	:= _main,_SetScreen
 
 ifdef project
 	EXEC		:= bin/$(project)

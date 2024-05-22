@@ -16,7 +16,7 @@ extern Vector2 SCREEN;
 #define RATE_MOD_BONE		000015
 #define RATE_MOD_SHIT		000020
 #define SPEED_MOD			000020
-#define RATE_MOD_BONE_MAX	150000
+#define RATE_MOD_BONE_MAX	120000
 #define RATE_MOD_SHIT_MAX	300000
 #define SPEED_MOD_MAX		350000
 
@@ -27,7 +27,7 @@ extern Vector2 SCREEN;
 #define GOLDEN_AMNT			5
 #define FROZEN_DURATION		5.0f
 
-#define DOG_MAX_SPD			275.0f
+#define DOG_MAX_SPD			0.25f
 #define DOG_MAX_HEALTH		1
 
 

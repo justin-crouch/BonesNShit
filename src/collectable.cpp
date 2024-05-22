@@ -1,6 +1,8 @@
 #include "collectable.h"
 using namespace Collectable;
 
+Vector2 size_perc = (Vector2){ 0.05f, 0.03f };
+
 std::bitset<MAX_COLLECTABLES> 			active;
 Vector2 								positions[MAX_COLLECTABLES];
 float 									speeds[MAX_COLLECTABLES];
@@ -84,11 +86,13 @@ void DurationAbility()
 	}
 }
 
-void Move(Vector2 bounds, Vector2 dog)
+void Move(Vector2 bounds, Vector2 dog_pos, Vector2 dog_size)
 {
 	Vector2 pos;
 	float speed = 0.0f;
 	Type collected = Type::NONE;
+
+	Vector2 size = (Vector2){ GetScreenWidth()*size_perc.x, GetScreenHeight()*size_perc.y };
 	
 	// Loop through only active collectibles
 	for(int i=0-1; i<last; i++)
@@ -108,7 +112,7 @@ void Move(Vector2 bounds, Vector2 dog)
 		}
 
 		// Check if collectible hits dog; continue to next collectible if no hit
-		if(!CheckCollisionRecs( (Rectangle){pos.x, pos.y, 50.0f, 10.0f}, (Rectangle){dog.x, dog.y, 100.0f, 50.0f} )) continue;
+		if(!CheckCollisionRecs( (Rectangle){pos.x, pos.y, size.x, size.y}, (Rectangle){dog_pos.x, dog_pos.y, dog_size.x, dog_size.y} )) continue;
 
 		// Collect the collectable and despawn
 		InitAbility(types[i]);
@@ -155,7 +159,8 @@ void Collectable::Add(int bound, Collectable::Type t)
 
 	// Randomize parameters of collectible
 	speeds[last] = GetRandomValue(MIN_FALL_SPD, MAX_FALL_SPD);
-	positions[last].x = GetRandomValue(0, bound);
+	// positions[last].x = GetRandomValue(0.0f, bound);
+	positions[last].x = GetRandomValue( GetScreenWidth()*0.1f, GetScreenWidth() - GetScreenWidth()*size_perc.x - GetScreenWidth()*0.1f );
 	positions[last].y = 20.0f;
 
 	// Set type of collectible, and make active
@@ -206,11 +211,11 @@ void Collectable::Remove(int idx)
 	}
 }
 
-void Collectable::Update(Vector2 bounds, Vector2 dog)
+void Collectable::Update(Vector2 bounds, Vector2 dog_pos, Vector2 dog_size)
 {
 	// Physically move active collectibles;
 	// Check collisions with dog OR in screen bounds
-	Move(bounds, dog);
+	Move(bounds, dog_pos, dog_size);
 
 	// Update abilities that need timers
 	DurationAbility();
@@ -225,25 +230,26 @@ void Collectable::Update(Vector2 bounds, Vector2 dog)
 
 void Collectable::Draw()
 {
+	Vector2 size = (Vector2){ (float)GetScreenWidth()*size_perc.x, (float)GetScreenHeight()*size_perc.y };
 	// Loop through only active collectibles
 	for(int i=0; i<last; i++)
 	{
 		switch(types[i])
 		{
 		case Type::NORMAL:
-			DrawRectangleV( positions[i], (Vector2){ 50.0f, 10.0f }, (Color){ 255, 255, 255, 255 } );
+			DrawRectangleV( positions[i], size, (Color){ 255, 255, 255, 255 } );
 			break;
 
 		case Type::FROZEN:
-			DrawRectangleV( positions[i], (Vector2){ 50.0f, 10.0f }, (Color){ 100, 100, 255, 255 } );
+			DrawRectangleV( positions[i], size, (Color){ 100, 100, 255, 255 } );
 			break;
 
 		case Type::GOLDEN:
-			DrawRectangleV( positions[i], (Vector2){ 50.0f, 10.0f }, (Color){ 255, 255, 0, 255 } );
+			DrawRectangleV( positions[i], size, (Color){ 255, 255, 0, 255 } );
 			break;
 
 		case Type::SHIT:
-			DrawRectangleV( positions[i], (Vector2){ 50.0f, 10.0f }, (Color){ 255, 0, 255, 255 } );
+			DrawRectangleV( positions[i], size, (Color){ 255, 0, 255, 255 } );
 			break;
 
 		default:
