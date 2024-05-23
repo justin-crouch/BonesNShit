@@ -26,11 +26,11 @@ SRCS			:= $(wildcard src/*.cpp)
 OBJS			:= $(subst src/,obj/,$(subst .cpp,.o,$(SRCS)))
 
 TARGET			:= WINDOWS
-RESOURCES		:= FALSE
+RESOURCES		:= TRUE
 SHELL_FILE		:= ./lib/raylib/minshell.html
 
 ifeq ($(RESOURCES),TRUE)
-	PRELOAD_FILES	:= --preload-file assets
+	PRELOAD_FILES	:= --embed-file assets -s TOTAL_MEMORY=67108864 -s ALLOW_MEMORY_GROWTH=1 -s FORCE_FILESYSTEM=1
 else
 	PRELOAD_FILES	:=
 endif

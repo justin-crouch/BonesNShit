@@ -47,6 +47,19 @@
             left: 50%;
             -ms-transform: translate(-50%, -50%);
             transform: translate(-50%, -50%);
+
+            z-index: -1;
+        }
+
+        img {
+            width: 200px;
+            margin: 0;
+            position: absolute;
+            top: 5%;
+            left: 88%;
+            /*-ms-transform: translate(-50%, 0%);
+            transform: translate(-50%, 0%);*/
+            z-index: 1;
         }
     </style>
     <script type='text/javascript' src="https://cdn.jsdelivr.net/gh/eligrey/FileSaver.js/dist/FileSaver.min.js"> </script>
@@ -69,8 +82,10 @@
         }
     </script>
     </head>
-    <body id="body">
+    <body>
         <canvas class=emscripten id=canvas oncontextmenu=event.preventDefault() tabindex=-1></canvas>
+        <!-- <img id=img src=""> -->
+        
         <!-- <p id="output" /> -->
         <script>
             var Module = {
@@ -89,7 +104,11 @@
                 canvas: (function() {
                     var canvas = document.getElementById('canvas');
                     return canvas;
-                })()
+                })(),
+                // img: (function() {
+                //     var img = document.getElementById('img');
+                //     return img;
+                // })()
             };
             
             function resizeCanvas(w, h){
@@ -97,12 +116,27 @@
                 Module.canvas.height = h;
             }
 
-            function init(){
+            function resize(){
                 Module._SetScreen(window.innerWidth, window.innerHeight);
             }
 
+            function init(){
+                resize();
+            }
 
-            window.onresize = init;
+            // function setImg(state){
+            //     let path = "";
+
+            //     if(state == 0) path = "/assets/hubsi-neutral.png";
+
+            //     var data = FS.readFile(path);
+            //     var blob = new Blob([data], {type: 'image/png'});
+
+            //     // Use createObjectURL to make a URL for the blob
+            //     Module.img.src = URL.createObjectURL(blob);
+            // }
+
+            window.onresize = resize;
         </script>
         {{{ SCRIPT }}}
     </body>

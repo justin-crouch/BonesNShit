@@ -22,6 +22,7 @@ namespace UI
 	typedef enum{
 		CENTER,
 		TOP_LEFT,
+		TOP_RIGHT,
 		CENTER_RIGHT,
 		CENTER_LEFT,
 	} Modes;
@@ -31,10 +32,12 @@ namespace UI
 	bool Button(const char* text, Vector2 position, Presets preset);
 	bool ButtonEx(const char* text, Rectangle rect, int font_size, Color fg, Color bg, Color hover);
 
-	void Text(const char* text, Vector2 position, Presets preset);
+	void Text(const char* text, Vector2 position, Presets preset, Color color = TEXT_COLOR);
 	void TextEx(const char* text, Vector2 position, int font_size, Color color);
 
 	void SimpleRect(Rectangle rect, Color color);
+
+	void Face(Texture2D tex, Vector2 pos, float scale);
 }
 
 #endif

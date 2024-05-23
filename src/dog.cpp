@@ -1,6 +1,9 @@
 #include "dog.h"
 using namespace Dog;
 
+#define MAX_SCALE_COUNT	0.07f
+#define MULT_SPEED		0.6f
+
 // Stats and attribs of dog (main character)
 Vector2 dog_vel = Vector2Zero();
 Vector2 dog_pos = Vector2Zero();
@@ -8,6 +11,15 @@ Vector2 real_pos = Vector2Zero();
 Vector2 dog_size = (Vector2){ 0.09f, 0.06f };
 int health = DOG_MAX_HEALTH;
 int score = 0;
+
+Dog::States face_state = Dog::States::NEUTRAL;
+float anim_counter = 0.0f;
+float mult = -MULT_SPEED;
+
+Texture2D textures[Dog::States::length];
+float scales[Dog::States::length];
+float scales_cp[Dog::States::length];
+Vector2 face_positions[Dog::States::length];
 
 // Getter/setter for pos, health, score, and size
 void Dog::SetPos(Vector2 pos) {
@@ -26,6 +38,28 @@ int Dog::GetScore() {return score;}
 
 Vector2 Dog::GetSize() {return (Vector2){GetScreenWidth()*dog_size.x, GetScreenHeight()*dog_size.y};}
 
+
+void Dog::SetTexture(States state, Texture2D tex, float scale)
+{
+	textures[state] = tex;
+	scales[state] = (scale > 0)? scale : scales[state];
+}
+Texture2D Dog::GetTexture(States state) {return textures[state];}
+
+void Dog::SetScale(States state, float s) {scales[state] = s; scales_cp[state] = s;}
+float Dog::GetScale(States state) {return scales[state];}
+
+void Dog::SetFacePos(States state, Vector2 pos) {face_positions[state] = pos;}
+Vector2 Dog::GetFacePos(States state) {return face_positions[state];}
+
+void Dog::SetFaceState(States state)
+{
+	face_state = state;
+	anim_counter = 0.0f;
+	mult = MULT_SPEED;
+}
+Dog::States Dog::GetFaceState() {return face_state;}
+
 // Move dog based on given input
 // Expects -1(left), 0(no movement), 1(right)
 void Dog::Update(int input)
@@ -35,10 +69,15 @@ void Dog::Update(int input)
 
 	// Vector2 newpos = Vector2Add( dog_pos, dog_vel );
 	Vector2 newpos;
-	newpos.x = Clamp(dog_pos.x + dog_vel.x, 0.1f, 0.9f - GetSize().x/GetScreenWidth());
+	newpos.x = Clamp(dog_pos.x + dog_vel.x, 0.15f, 0.85f - GetSize().x/GetScreenWidth());
 	newpos.y = (float)GetScreenHeight() - GetSize().y - 10;
 
     Dog::SetPos(newpos);
+
+    anim_counter += GetFrameTime() * mult;
+    if(anim_counter > MAX_SCALE_COUNT) {anim_counter = MAX_SCALE_COUNT; mult = -MULT_SPEED;}
+    if(anim_counter < 0.0f) anim_counter = 0.0f;
+    scales[face_state] = anim_counter + scales_cp[face_state];
 }
 
 void Dog::Draw()

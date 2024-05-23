@@ -28,7 +28,7 @@ extern Vector2 SCREEN;
 #define FROZEN_DURATION		5.0f
 
 #define DOG_MAX_SPD			0.25f
-#define DOG_MAX_HEALTH		1
+#define DOG_MAX_HEALTH		3
 
 
 #endif

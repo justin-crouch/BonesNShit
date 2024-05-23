@@ -66,6 +66,8 @@ bool UI::ButtonEx(const char* text, Rectangle rect, int font_size, Color fg, Col
 		break;
 	case Modes::CENTER_LEFT:
 		break;
+	default:
+		break;
 	}
 
 	Vector2 mouse_pos = GetMousePosition();
@@ -77,31 +79,26 @@ bool UI::ButtonEx(const char* text, Rectangle rect, int font_size, Color fg, Col
 	return (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) ? CheckCollisionPointRec( mouse_pos, collider ) : false);
 }
 
-void UI::Text(const char* text, Vector2 position, Presets preset)
+void UI::Text(const char* text, Vector2 position, Presets preset, Color color)
 {
 	int font_size;
-	Color color;
-
+	
 	switch(preset)
 	{
 	case Presets::TEXT_SMALL:
 		font_size = Style::SMALL_FONT;
-		color = TEXT_COLOR;
 		break;
 
 	case Presets::TEXT_MEDIUM:
 		font_size = Style::MEDIUM_FONT;
-		color = TEXT_COLOR;
 		break;
 
 	case Presets::TEXT_LARGE:
 		font_size = Style::LARGE_FONT;
-		color = TEXT_COLOR;
 		break;
 
 	case Presets::TEXT_TITLE:
 		font_size = Style::VERY_LARGE_FONT;
-		color = TEXT_COLOR;
 		break;
 
 	default:
@@ -128,6 +125,8 @@ void UI::TextEx(const char* text, Vector2 position, int font_size, Color color)
 	case Modes::CENTER_LEFT:
 		offset.y = -font_size/2.0f;
 		break;
+	default:
+		break;
 	}
 
 	DrawText(text, position.x+offset.x, position.y+offset.y, font_size, color);
@@ -144,13 +143,24 @@ void UI::SimpleRect(Rectangle rect, Color color)
 		break;
 	case Modes::TOP_LEFT:
 		break;
+	case Modes::TOP_RIGHT:
+		offset.x = rect.width;
+		break;
 	case Modes::CENTER_RIGHT:
 		break;
 	case Modes::CENTER_LEFT:
+		break;
+	default:
 		break;
 	}
 
 	rect.x -= offset.x;
 	rect.y -= offset.y;
 	DrawRectangleRec(rect, color);
+}
+
+void UI::Face(Texture2D tex, Vector2 pos, float scale)
+{
+	DrawCircleGradient(GetScreenWidth()-(float)GetScreenWidth()*0.075f, GetScreenHeight()*0.15f, GetScreenWidth()*0.1f, (Color){255,255,255,150}, (Color){255,255,255,0});
+    DrawTextureEx( tex, pos, 0.0f, scale, (Color){255,255,255,255} );
 }

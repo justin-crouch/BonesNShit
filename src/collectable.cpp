@@ -1,6 +1,8 @@
 #include "collectable.h"
 using namespace Collectable;
 
+#define ROT_SPEED	1.0f
+
 Vector2 size_perc = (Vector2){ 0.05f, 0.03f };
 
 std::bitset<MAX_COLLECTABLES> 			active;
@@ -22,6 +24,8 @@ int		shit_spawn_rate = GetRandomValue(SPAWN_RATE_SHIT_MIN, SPAWN_RATE_SHIT_MAX);
 
 std::bitset<Collectable::Type::length> 	collected_flags;
 
+Texture2D c_textures[Collectable::Type::length];
+float rotations[MAX_COLLECTABLES];
 
 int Collectable::GetVals(int type)
 {
@@ -97,6 +101,8 @@ void Move(Vector2 bounds, Vector2 dog_pos, Vector2 dog_size)
 	// Loop through only active collectibles
 	for(int i=0-1; i<last; i++)
 	{
+		rotations[i] += ROT_SPEED;
+		if(rotations[i] > 360.0f) rotations[i] -= 360.0f;
 		// Freeze shit if needed
 		speed = (collected_flags[Type::FROZEN] && types[i] == Type::SHIT) ? 0.0f : speeds[i];
 
@@ -150,6 +156,13 @@ void Spawn(Vector2 bounds)
 }
 
 
+void Collectable::Init()
+{
+	c_textures[Type::NORMAL] = LoadTexture("assets/bone-white.png");
+	c_textures[Type::FROZEN] = LoadTexture("assets/bone-blue.png");
+	c_textures[Type::GOLDEN] = LoadTexture("assets/bone-gold.png");
+}
+
 void Collectable::SetCallable(Type t, std::function<void()> func) {callables[t] = func;}
 
 void Collectable::Add(int bound, Collectable::Type t)
@@ -160,8 +173,9 @@ void Collectable::Add(int bound, Collectable::Type t)
 	// Randomize parameters of collectible
 	speeds[last] = GetRandomValue(MIN_FALL_SPD, MAX_FALL_SPD);
 	// positions[last].x = GetRandomValue(0.0f, bound);
-	positions[last].x = GetRandomValue( GetScreenWidth()*0.1f, GetScreenWidth() - GetScreenWidth()*size_perc.x - GetScreenWidth()*0.1f );
+	positions[last].x = GetRandomValue( GetScreenWidth()*0.15f, GetScreenWidth() - GetScreenWidth()*size_perc.x - GetScreenWidth()*0.15f );
 	positions[last].y = 20.0f;
+	rotations[last] = (float)GetRandomValue(0, 360);
 
 	// Set type of collectible, and make active
 	types[last] = t;
@@ -179,6 +193,7 @@ void Collectable::Remove(int idx)
 	// Reset idx position and disable activity; lessen index of last active collectable
 	positions[idx].x = 0.0f;
 	positions[idx].y = 0.0f;
+	rotations[idx] = 0.0f;
 	active.reset(idx);
 	last--;
 
@@ -196,6 +211,9 @@ void Collectable::Remove(int idx)
 		positions[i].y = positions[i + 1].y;
 		positions[i + 1].x = 0.0f;
 		positions[i + 1].y = 0.0f;
+
+		rotations[i] = rotations[i + 1];
+		// rotations[i] = 0.0f;
 
 		// Set current active w/ the right active
 		active.set(i);
@@ -231,21 +249,31 @@ void Collectable::Update(Vector2 bounds, Vector2 dog_pos, Vector2 dog_size)
 void Collectable::Draw()
 {
 	Vector2 size = (Vector2){ (float)GetScreenWidth()*size_perc.x, (float)GetScreenHeight()*size_perc.y };
+	float scale = 0.17f;
+	float rot = 0.0f;
+
 	// Loop through only active collectibles
 	for(int i=0; i<last; i++)
 	{
+		rot = rotations[i];
 		switch(types[i])
 		{
 		case Type::NORMAL:
-			DrawRectangleV( positions[i], size, (Color){ 255, 255, 255, 255 } );
+			DrawTexturePro(c_textures[Type::NORMAL], (Rectangle){0,0,(float)c_textures[Type::NORMAL].width,(float)c_textures[Type::NORMAL].height}, (Rectangle){positions[i].x,positions[i].y,(float)c_textures[Type::NORMAL].width*scale,(float)c_textures[Type::NORMAL].height*scale}, (Vector2){c_textures[Type::NORMAL].width*(scale*0.5f),c_textures[Type::NORMAL].height*(scale*0.5f)}, rot, (Color){255,255,255,255});
+			// DrawTextureEx( c_textures[Type::NORMAL], Vector2Subtract(positions[i], (Vector2){15.0f, 35.0f}), rot, scale, (Color){255,255,255,255} );
+			// DrawRectangleV( positions[i], size, (Color){ 255, 255, 255, 255 } );
 			break;
 
 		case Type::FROZEN:
-			DrawRectangleV( positions[i], size, (Color){ 100, 100, 255, 255 } );
+			// DrawRectangleV( positions[i], size, (Color){ 100, 100, 255, 255 } );
+			// DrawTextureEx( c_textures[Type::FROZEN], Vector2Subtract(positions[i], (Vector2){15.0f, 35.0f}), rot, scale, (Color){255,255,255,255} );
+			DrawTexturePro(c_textures[Type::FROZEN], (Rectangle){0,0,(float)c_textures[Type::NORMAL].width,(float)c_textures[Type::NORMAL].height}, (Rectangle){positions[i].x,positions[i].y,(float)c_textures[Type::NORMAL].width*scale,(float)c_textures[Type::NORMAL].height*scale}, (Vector2){c_textures[Type::NORMAL].width*(scale*0.5f),c_textures[Type::NORMAL].height*(scale*0.5f)}, rot, (Color){255,255,255,255});
 			break;
 
 		case Type::GOLDEN:
-			DrawRectangleV( positions[i], size, (Color){ 255, 255, 0, 255 } );
+			// DrawRectangleV( positions[i], size, (Color){ 255, 255, 0, 255 } );
+			// DrawTextureEx( c_textures[Type::GOLDEN], Vector2Subtract(positions[i], (Vector2){15.0f, 35.0f}), rot, scale, (Color){255,255,255,255} );
+			DrawTexturePro(c_textures[Type::GOLDEN], (Rectangle){0,0,(float)c_textures[Type::NORMAL].width,(float)c_textures[Type::NORMAL].height}, (Rectangle){positions[i].x,positions[i].y,(float)c_textures[Type::NORMAL].width*scale,(float)c_textures[Type::NORMAL].height*scale}, (Vector2){c_textures[Type::NORMAL].width*(scale*0.5f),c_textures[Type::NORMAL].height*(scale*0.5f)}, rot, (Color){255,255,255,255});
 			break;
 
 		case Type::SHIT:
