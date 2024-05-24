@@ -29,7 +29,7 @@ namespace UI
 
 	void SetMode(Modes mode);
 
-	bool Button(const char* text, Vector2 position, Presets preset);
+	bool Button(const char* text, Vector2 position, Presets preset, Color hover=BTN_HOVER);
 	bool ButtonEx(const char* text, Rectangle rect, int font_size, Color fg, Color bg, Color hover);
 
 	void Text(const char* text, Vector2 position, Presets preset, Color color = TEXT_COLOR);

@@ -36,7 +36,7 @@ namespace Dog
 	void SetFacePos(States state, Vector2 pos);
 	Vector2 GetFacePos(States state);
 
-	void SetFaceState(States state);
+	void SetFaceState(States state, float time=-1.0f);
 	States GetFaceState();
 
 	void Update(int input);

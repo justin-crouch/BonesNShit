@@ -101,8 +101,9 @@ void Move(Vector2 bounds, Vector2 dog_pos, Vector2 dog_size)
 	// Loop through only active collectibles
 	for(int i=0-1; i<last; i++)
 	{
-		rotations[i] += ROT_SPEED;
+		if(!(types[i]==Type::SHIT && collected_flags[Type::FROZEN])) rotations[i] += ROT_SPEED;
 		if(rotations[i] > 360.0f) rotations[i] -= 360.0f;
+
 		// Freeze shit if needed
 		speed = (collected_flags[Type::FROZEN] && types[i] == Type::SHIT) ? 0.0f : speeds[i];
 
@@ -161,6 +162,7 @@ void Collectable::Init()
 	c_textures[Type::NORMAL] = LoadTexture("assets/bone-white.png");
 	c_textures[Type::FROZEN] = LoadTexture("assets/bone-blue.png");
 	c_textures[Type::GOLDEN] = LoadTexture("assets/bone-gold.png");
+	c_textures[Type::SHIT] = LoadTexture("assets/poop.png");
 }
 
 void Collectable::SetCallable(Type t, std::function<void()> func) {callables[t] = func;}
@@ -173,7 +175,7 @@ void Collectable::Add(int bound, Collectable::Type t)
 	// Randomize parameters of collectible
 	speeds[last] = GetRandomValue(MIN_FALL_SPD, MAX_FALL_SPD);
 	// positions[last].x = GetRandomValue(0.0f, bound);
-	positions[last].x = GetRandomValue( GetScreenWidth()*0.15f, GetScreenWidth() - GetScreenWidth()*size_perc.x - GetScreenWidth()*0.15f );
+	positions[last].x = GetRandomValue( 0.0f, GetScreenWidth() - GetScreenWidth()*size_perc.x - GetScreenWidth()*0.15f );
 	positions[last].y = 20.0f;
 	rotations[last] = (float)GetRandomValue(0, 360);
 
@@ -252,6 +254,37 @@ void Collectable::Draw()
 	float scale = 0.17f;
 	float rot = 0.0f;
 
+	switch(GetScreenWidth())
+	{
+    case 368:
+    	scale -= 0.14f;
+    	break;
+    case 512:
+    	scale -= 0.12f;
+    	break;
+    case 640:
+    	scale -= 0.10f;
+    	break;
+    case 768:
+    	scale -= 0.08f;
+    	break;
+    case 896:
+    	scale -= 0.06f;
+    	break;
+    case 1024:
+    	scale -= 0.04f;
+    	break;
+    case 1152:
+    	scale -= 0.02f;
+    	break;
+    case 1280:
+    	scale -= 0.0f;;
+    	break;
+    default:
+    	scale = 0.06;
+    	break;
+    }
+
 	// Loop through only active collectibles
 	for(int i=0; i<last; i++)
 	{
@@ -277,7 +310,8 @@ void Collectable::Draw()
 			break;
 
 		case Type::SHIT:
-			DrawRectangleV( positions[i], size, (Color){ 255, 0, 255, 255 } );
+			DrawTexturePro(c_textures[Type::SHIT], (Rectangle){0,0,(float)c_textures[Type::SHIT].width,(float)c_textures[Type::SHIT].height}, (Rectangle){positions[i].x + (float)c_textures[Type::SHIT].width*scale*0.5f,positions[i].y,(float)c_textures[Type::SHIT].width*scale,(float)c_textures[Type::SHIT].height*scale}, (Vector2){c_textures[Type::SHIT].width*(scale*0.5f),c_textures[Type::SHIT].height*(scale*0.5f)}, rot, (Color){255,255,255,255});
+			// DrawRectangleV( positions[i], size, (Color){ 255, 0, 255, 255 } );
 			break;
 
 		default:

@@ -14,6 +14,7 @@ int score = 0;
 
 Dog::States face_state = Dog::States::NEUTRAL;
 float anim_counter = 0.0f;
+float face_counter = 0.0f;
 float mult = -MULT_SPEED;
 
 Texture2D textures[Dog::States::length];
@@ -52,11 +53,14 @@ float Dog::GetScale(States state) {return scales[state];}
 void Dog::SetFacePos(States state, Vector2 pos) {face_positions[state] = pos;}
 Vector2 Dog::GetFacePos(States state) {return face_positions[state];}
 
-void Dog::SetFaceState(States state)
+void Dog::SetFaceState(States state, float time)
 {
 	face_state = state;
 	anim_counter = 0.0f;
 	mult = MULT_SPEED;
+
+	if(time > 0.0f) face_counter = -time;
+	else face_counter = 0.0f;
 }
 Dog::States Dog::GetFaceState() {return face_state;}
 
@@ -69,7 +73,7 @@ void Dog::Update(int input)
 
 	// Vector2 newpos = Vector2Add( dog_pos, dog_vel );
 	Vector2 newpos;
-	newpos.x = Clamp(dog_pos.x + dog_vel.x, 0.15f, 0.85f - GetSize().x/GetScreenWidth());
+	newpos.x = Clamp(dog_pos.x + dog_vel.x, 0.0f, 0.85f - GetSize().x/GetScreenWidth());
 	newpos.y = (float)GetScreenHeight() - GetSize().y - 10;
 
     Dog::SetPos(newpos);
@@ -78,6 +82,13 @@ void Dog::Update(int input)
     if(anim_counter > MAX_SCALE_COUNT) {anim_counter = MAX_SCALE_COUNT; mult = -MULT_SPEED;}
     if(anim_counter < 0.0f) anim_counter = 0.0f;
     scales[face_state] = anim_counter + scales_cp[face_state];
+
+    if(face_counter < 0.0f) face_counter += GetFrameTime();
+    if(face_counter > 0.0f)
+    {
+    	face_counter = 0.0f;
+    	SetFaceState(States::NEUTRAL);
+    }
 }
 
 void Dog::Draw()
@@ -90,4 +101,5 @@ void Dog::Reset()
 {
 	health = DOG_MAX_HEALTH;
 	score = 0;
+	face_state = Dog::States::NEUTRAL;
 }

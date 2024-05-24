@@ -4,11 +4,11 @@ UI::Modes draw_mode = UI::Modes::TOP_LEFT;
 
 void UI::SetMode(Modes mode) {draw_mode = mode;}
 
-bool UI::Button(const char* text, Vector2 position, Presets preset)
+bool UI::Button(const char* text, Vector2 position, Presets preset, Color hover)
 {
 	Rectangle rect{position.x, position.y};
 	int font_size;
-	Color fg, bg, hover;
+	Color fg, bg;
 
 	switch(preset)
 	{
@@ -18,7 +18,6 @@ bool UI::Button(const char* text, Vector2 position, Presets preset)
 		font_size = Style::SMALL_FONT;
 		fg = BTN_FG;
 		bg = BTN_BG;
-		hover = BTN_HOVER;
 		break;
 
 	case Presets::BUTTON_MEDIUM:
@@ -27,7 +26,6 @@ bool UI::Button(const char* text, Vector2 position, Presets preset)
 		font_size = Style::MEDIUM_FONT;
 		fg = BTN_FG;
 		bg = BTN_BG;
-		hover = BTN_HOVER;
 		break;
 
 	case Presets::BUTTON_LARGE:
@@ -36,7 +34,6 @@ bool UI::Button(const char* text, Vector2 position, Presets preset)
 		font_size = Style::LARGE_FONT;
 		fg = BTN_FG;
 		bg = BTN_BG;
-		hover = BTN_HOVER;
 		break;
 
 	default:
@@ -72,9 +69,11 @@ bool UI::ButtonEx(const char* text, Rectangle rect, int font_size, Color fg, Col
 
 	Vector2 mouse_pos = GetMousePosition();
 	Color onhover = CheckCollisionPointRec( mouse_pos, collider ) ? hover : bg;
+	Color text_color = CheckCollisionPointRec( mouse_pos, collider ) ? TEXT_COLOR_HOVER : fg;
 
-	DrawRectangleRec(collider, onhover);
-	DrawText(text, collider.x + collider.width/2.0f - MeasureText(text, font_size)/2.0f, collider.y + collider.height/2.0f - font_size/2.0f, font_size, fg);
+	DrawRectangleRec(collider, (Color){0,0,0,255});
+	DrawRectangleRec( (Rectangle){collider.x+3, collider.y+3, collider.width-6, collider.height-6} , onhover);
+	DrawText(text, collider.x + collider.width/2.0f - MeasureText(text, font_size)/2.0f, collider.y + collider.height/2.0f - font_size/2.0f, font_size, text_color);
 
 	return (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) ? CheckCollisionPointRec( mouse_pos, collider ) : false);
 }

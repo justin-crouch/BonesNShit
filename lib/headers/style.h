@@ -17,10 +17,11 @@ namespace Style{
 	void SetFontSizes(Vector2 screen);
 }
 
-#define BTN_FG			 (Color){ 255,	255,	255,	255	}
-#define BTN_BG			 (Color){ 0,	0,		0,		0 	}
-#define BTN_HOVER		 (Color){ 255,	0,		0,		100	}
+#define BTN_FG			 (Color){ 0,	0,		0,		255	}
+#define BTN_BG			 (Color){ 107,	190,	172,	255	}
+#define BTN_HOVER		 (Color){ 99,	167,	238,	255	}
 
-#define TEXT_COLOR		 (Color){ 255, 	255, 	255, 	255 }
+#define TEXT_COLOR		 (Color){ 0, 	0, 		0, 		255 }
+#define TEXT_COLOR_HOVER (Color){ 0, 	0, 		0, 		255 }
 
 #endif
