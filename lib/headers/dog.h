@@ -27,6 +27,7 @@ namespace Dog
 
 	Vector2 GetSize();
 
+	void LoadBowl();
 	void SetTexture(States state, Texture2D tex, float scale=0);
 	Texture2D GetTexture(States state);
 

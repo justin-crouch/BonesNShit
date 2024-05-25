@@ -22,6 +22,8 @@ float scales[Dog::States::length];
 float scales_cp[Dog::States::length];
 Vector2 face_positions[Dog::States::length];
 
+Texture2D bowl;
+
 // Getter/setter for pos, health, score, and size
 void Dog::SetPos(Vector2 pos) {
 	dog_pos = pos;
@@ -39,7 +41,7 @@ int Dog::GetScore() {return score;}
 
 Vector2 Dog::GetSize() {return (Vector2){GetScreenWidth()*dog_size.x, GetScreenHeight()*dog_size.y};}
 
-
+void Dog::LoadBowl() {bowl = LoadTexture("assets/bowl.png");}
 void Dog::SetTexture(States state, Texture2D tex, float scale)
 {
 	textures[state] = tex;
@@ -93,7 +95,44 @@ void Dog::Update(int input)
 
 void Dog::Draw()
 {
-	DrawRectangleV( real_pos, GetSize(), (Color){0, 255, 0, 255} );
+	float scale = 0.4f;
+	switch(GetScreenWidth())
+	{
+	case 207:
+		scale -= 0.22f;
+		break;
+	case 360:
+		scale -= 0.20f;
+		break;
+	case 368:
+		scale -= 0.18f;
+		break;
+	case 512:
+		scale -= 0.16f;
+		break;
+	case 640:
+		scale -= 0.14f;
+		break;
+	case 768:
+		scale -= 0.12f;
+		break;
+	case 896:
+		scale -= 0.10f;
+		break;
+	case 1024:
+		scale -= 0.08f;
+		break;
+	case 1152:
+		scale -= 0.02f;
+		break;
+	case 1280:
+		scale -= 0.0f;
+		break;
+	default: break; 
+	}
+	Vector2 pos = Vector2Subtract( real_pos, (Vector2){bowl.width * scale * 0.17f, bowl.height * scale * 0.17f} );
+	DrawTextureEx(bowl, pos, 0.0f, scale, (Color){255,255,255,255});
+	// DrawRectangleV( real_pos, GetSize(), (Color){0, 255, 0, 255} );
 }
 
 // Reset stats of dog

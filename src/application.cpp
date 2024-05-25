@@ -181,9 +181,20 @@ void SetScreen(int w, int h)
 #include "ui.h"
 
 #include <string>
+#include <iostream>
 
 void UpdateDrawFrame(void);
 Camera2D viewport;
+Music symphony_40;
+Music mozart;
+Sound button_click;
+Sound button_pressed;
+int last_played = 0;
+bool play_button = false;
+bool play_hovered = false;
+bool last_hovered = false;
+
+bool pause_game = false;
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -194,6 +205,24 @@ int main(void)
     //--------------------------------------------------------------------------------------
     EM_ASM({ init() });
     InitWindow(SCREEN.x, SCREEN.y, "Bones N Shit");
+
+    InitAudioDevice();
+    SetMasterVolume(10.0f);
+
+    symphony_40 = LoadMusicStream("assets/Symphony_40.mp3");
+    mozart = LoadMusicStream("assets/Mozart_Serenade.mp3");
+    SetMusicVolume(symphony_40, 0.25f);
+    SetMusicVolume(mozart, 0.45f);
+    symphony_40.looping = false;
+    mozart.looping = false;
+
+    last_played = 0;
+    PlayMusicStream(mozart);
+
+    button_click = LoadSound("assets/Button_Click.ogg");
+    button_pressed = LoadSound("assets/Button_Pressed.ogg");
+    SetSoundVolume(button_click, 0.25f);
+    SetSoundVolume(button_pressed, 0.5f);
 
     Texture2D big_bone = LoadTexture("assets/bone-white.png");
     Texture2D heart = LoadTexture("assets/heart.png");
@@ -230,6 +259,7 @@ int main(void)
         Dog::SetTexture(Dog::States::BONE, LoadTexture("assets/hubsi-bone.png"));
         Dog::SetTexture(Dog::States::DISGUST, LoadTexture("assets/hubsi-disgust.png"));
         Dog::SetTexture(Dog::States::YAWN, LoadTexture("assets/hubsi-yawn.png"));
+        Dog::LoadBowl();
 
         Collectable::Init();
 
@@ -263,26 +293,9 @@ int main(void)
     GameState::SetStateCallback(GameState::States::PLAY, GameState::CallbackType::UPDATE, [](){
         if(IsKeyPressed(KEY_P))     GameState::ChangeState( GameState::States::PAUSE );
         if(Dog::GetHealth() <= 0)   GameState::ChangeState( GameState::States::GAMEOVER );
-        if(IsKeyPressed(KEY_SPACE))
-        {
-            switch(Dog::GetFaceState())
-            {
-            case Dog::States::NEUTRAL:
-                Dog::SetFaceState( Dog::States::BONE, 1.0f );
-                break;
-            case Dog::States::BONE:
-                Dog::SetFaceState( Dog::States::DISGUST, 1.0f );
-                break;
-            case Dog::States::DISGUST:
-                Dog::SetFaceState( Dog::States::YAWN, 1.0f );
-                break;
-            case Dog::States::YAWN:
-                Dog::SetFaceState( Dog::States::NEUTRAL );
-                break;
-            default: break;
-            }
-        }
+        // if(IsKeyPressed(KEY_SPACE)) pause_game = !pause_game;
 
+        if(pause_game) return;
         Dog::Update(IsKeyDown(KEY_D) - IsKeyDown(KEY_A));
         Collectable::Update((Vector2){(float)GetScreenWidth(), (float)GetScreenHeight()}, Dog::GetPos(), Dog::GetSize());
     });
@@ -343,14 +356,18 @@ int main(void)
 
 
         UI::SetMode( UI::Modes::CENTER );
-        if(UI::Button("Play", (Vector2){(float)GetScreenWidth()/2.0f, Style::VERY_LARGE_FONT*7.0f}, UI::Presets::BUTTON_MEDIUM))
-            GameState::ChangeState( GameState::States::RESET );
+        UI::ClickHover play = UI::Button("Play", (Vector2){(float)GetScreenWidth()/2.0f, Style::VERY_LARGE_FONT*7.0f}, UI::Presets::BUTTON_MEDIUM);
+        if(play.clicked) GameState::ChangeState( GameState::States::RESET );
 
         // Allow showing of exit button if not on web build
+        UI::ClickHover exit;
         #ifndef PLATFORM_WEB
-        if(UI::Button("Exit", (Vector2){(float)GetScreenWidth()/2.0f, Style::VERY_LARGE_FONT*8.0f + Style::LARGE_FONT}, UI::Presets::BUTTON_LARGE, (Color){255, 0, 0, 255}))
-            GameState::ChangeState( GameState::States::EXIT );
+        exit = UI::Button("Exit", (Vector2){(float)GetScreenWidth()/2.0f, Style::VERY_LARGE_FONT*8.0f + Style::LARGE_FONT}, UI::Presets::BUTTON_LARGE, (Color){255, 0, 0, 255});
+        if(exit.clicked) GameState::ChangeState( GameState::States::EXIT );
         #endif
+
+        play_button = play.clicked || exit.clicked || play_button;
+        play_hovered = play.hovered || exit.hovered || play_hovered;
     });
 
     // Draw dog, collectables, and stats when in play
@@ -381,8 +398,11 @@ int main(void)
         UI::Face( Dog::GetTexture(Dog::GetFaceState()), Dog::GetFacePos(Dog::GetFaceState()), Dog::GetScale(Dog::GetFaceState()) );
         
         UI::SetMode( UI::Modes::TOP_LEFT );
-        if(UI::Button("| |", (Vector2){0, (float)Style::SMALL_FONT}, UI::Presets::BUTTON_SMALL))
-            GameState::ChangeState( GameState::States::PAUSE );
+        UI::ClickHover pause = UI::Button("| |", (Vector2){0, (float)Style::SMALL_FONT}, UI::Presets::BUTTON_SMALL);
+        if(pause.clicked) GameState::ChangeState( GameState::States::PAUSE );
+
+        play_button = pause.clicked || play_button;
+        play_hovered = pause.hovered || play_hovered;
     });
 
     // Draw dog, collectables, and stats when paused
@@ -415,10 +435,13 @@ int main(void)
         UI::SimpleRect((Rectangle){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight()/2.0f, (float)GetScreenWidth()-10, (float)GetScreenHeight()-10}, (Color){0, 0, 0, 200});
         UI::Text("PAUSED", (Vector2){(float)GetScreenWidth()/2.0f, Style::VERY_LARGE_FONT*4.0f}, UI::Presets::TEXT_TITLE, (Color){255,255,255,255});
         
-        if(UI::Button("Resume", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight()/2.0f + Style::VERY_LARGE_FONT}, UI::Presets::BUTTON_MEDIUM))
-            GameState::ChangeState( GameState::States::PLAY );
-        if(UI::Button("Exit", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight()/2.0f + Style::VERY_LARGE_FONT*2.0f}, UI::Presets::BUTTON_MEDIUM, (Color){255, 0, 0, 255}))
-            GameState::ChangeState( GameState::States::MAIN );
+        UI::ClickHover resume = UI::Button("Resume", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight()/2.0f + Style::VERY_LARGE_FONT}, UI::Presets::BUTTON_MEDIUM);
+        UI::ClickHover exit = UI::Button("Exit", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight()/2.0f + Style::VERY_LARGE_FONT*2.0f}, UI::Presets::BUTTON_MEDIUM, (Color){255, 0, 0, 255});
+        if(resume.clicked) GameState::ChangeState( GameState::States::PLAY );
+        if(exit.clicked) GameState::ChangeState( GameState::States::MAIN );
+
+        play_button = resume.clicked || exit.clicked || play_button;
+        play_hovered = resume.hovered || exit.hovered || play_hovered;
     });
 
     // Draw gameover scene
@@ -466,10 +489,13 @@ int main(void)
             UI::Text(std::to_string(Dog::GetScore() - score_offset).c_str(), (Vector2){(float)GetScreenWidth()/2.0f+Style::VERY_LARGE_FONT*3.0f, Style::VERY_LARGE_FONT*6.0f}, UI::Presets::TEXT_MEDIUM);
 
         UI::SetMode( UI::Modes::CENTER );
-        if(UI::Button("Replay", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight()/2.0f+Style::VERY_LARGE_FONT*2.0f}, UI::Presets::BUTTON_MEDIUM))
-            GameState::ChangeState( GameState::States::RESET );
-        if(UI::Button("Exit", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight()/2.0f+Style::VERY_LARGE_FONT*3.0f}, UI::Presets::BUTTON_MEDIUM, (Color){255, 0, 0, 255}))
-            GameState::ChangeState( GameState::States::MAIN );
+        UI::ClickHover replay = UI::Button("Replay", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight()/2.0f+Style::VERY_LARGE_FONT*2.0f}, UI::Presets::BUTTON_MEDIUM);
+        UI::ClickHover exit = UI::Button("Exit", (Vector2){(float)GetScreenWidth()/2.0f, (float)GetScreenHeight()/2.0f+Style::VERY_LARGE_FONT*3.0f}, UI::Presets::BUTTON_MEDIUM, (Color){255, 0, 0, 255});
+        if(replay.clicked) GameState::ChangeState( GameState::States::RESET );
+        if(exit.clicked) GameState::ChangeState( GameState::States::MAIN );
+
+        play_button = replay.clicked || exit.clicked || play_button;
+        play_hovered = replay.hovered || exit.hovered || play_hovered;
     });
     //--------------------------------------------------------------------------------------
     
@@ -500,6 +526,41 @@ void UpdateDrawFrame(void)
     // Update
     //----------------------------------------------------------------------------------
     GameState::Update();
+
+    switch(last_played)
+    {
+    case 0:
+        if(!IsMusicStreamPlaying(mozart))
+        {
+            PlayMusicStream(symphony_40);
+            last_played = 1;
+            break;
+        }
+        UpdateMusicStream(mozart);
+        break;
+    case 1:
+        if(!IsMusicStreamPlaying(symphony_40))
+        {
+            PlayMusicStream(mozart);
+            last_played = 0;
+            break;
+        }
+        UpdateMusicStream(symphony_40);
+        break;
+    }
+
+    if(play_button)
+    {
+        play_button = false;
+        PlaySound(button_pressed);
+    }
+    if(play_hovered && !last_hovered)
+    {
+        PlaySound(button_click);
+        last_hovered = true;
+    }
+    if(!play_hovered) last_hovered = false;
+    play_hovered = false;
 
     //----------------------------------------------------------------------------------
 

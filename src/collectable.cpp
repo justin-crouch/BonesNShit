@@ -311,6 +311,10 @@ void Collectable::Draw()
 
 		case Type::SHIT:
 			DrawTexturePro(c_textures[Type::SHIT], (Rectangle){0,0,(float)c_textures[Type::SHIT].width,(float)c_textures[Type::SHIT].height}, (Rectangle){positions[i].x + (float)c_textures[Type::SHIT].width*scale*0.5f,positions[i].y,(float)c_textures[Type::SHIT].width*scale,(float)c_textures[Type::SHIT].height*scale}, (Vector2){c_textures[Type::SHIT].width*(scale*0.5f),c_textures[Type::SHIT].height*(scale*0.5f)}, rot, (Color){255,255,255,255});
+			
+			if(collected_flags[Type::FROZEN])
+				DrawCircleSector( Vector2Add(positions[i], (Vector2){c_textures[Type::SHIT].width*scale*0.5f,c_textures[Type::SHIT].height*scale*0.25f}) , 30.0f, 0.0f, 360.0f * (1.0f - cooldown_frozen/FROZEN_DURATION), 30, (Color){133,184,238,200});
+			
 			// DrawRectangleV( positions[i], size, (Color){ 255, 0, 255, 255 } );
 			break;
 

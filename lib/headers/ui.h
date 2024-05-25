@@ -8,6 +8,11 @@
 
 namespace UI
 {
+	typedef struct ClickHover{
+		bool clicked=false;
+		bool hovered=false;
+	} ClickHover;
+
 	typedef enum{
 		BUTTON_SMALL,
 		BUTTON_MEDIUM,
@@ -27,10 +32,12 @@ namespace UI
 		CENTER_LEFT,
 	} Modes;
 
+	void SetButtonAudio(Sound sound);
+
 	void SetMode(Modes mode);
 
-	bool Button(const char* text, Vector2 position, Presets preset, Color hover=BTN_HOVER);
-	bool ButtonEx(const char* text, Rectangle rect, int font_size, Color fg, Color bg, Color hover);
+	ClickHover Button(const char* text, Vector2 position, Presets preset, Color hover=BTN_HOVER);
+	ClickHover ButtonEx(const char* text, Rectangle rect, int font_size, Color fg, Color bg, Color hover);
 
 	void Text(const char* text, Vector2 position, Presets preset, Color color = TEXT_COLOR);
 	void TextEx(const char* text, Vector2 position, int font_size, Color color);
